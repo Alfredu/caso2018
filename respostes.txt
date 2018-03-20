@@ -1,0 +1,65 @@
+Noms: Clàudia Martínez Alquézar i Aleix Sanchis Ramírez
+
+2)
+El tipus es "PentiumPro", però no apareix cap subtipus d'aquesta família.
+
+3)
+privileged ports: host 0x20  devices 0x21
+Getting processors at array 0x0
+        processors at array 0x1030000
+processor_listCnt 1 -> Nombre de processadors (1)
+processor_list[0] 0x22 -> Número identificador dels processadors
+SUCCESS
+CPU Type 19 -> Tipus de CPU
+CPU Subtype 1 -> Subtipus de CPU
+Running 1 -> Està corrent? (1=Sí, 0=No) 
+Slot num 0 
+Is master 1 -> És el master? (Sí)
+
+4)
+Efectivament, està malament i no compila. Ho podem arreglar afegint la coma que falta a la línia: res = vm_map(mach_task_self(), (vm_address_t *) &p, 8192, 0, TRUE,
+              MACH_PORT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_ALL, FALSE);
+
+
+Els missatges d'error no són massa clars.
+
+5)
+	1) 0x1000
+	2) 0x2000
+	3) vm_map comença a 0x12b8000. processor_info comença a 0x1030000.
+	4) Sí que ho son
+
+	5) 	
+		VM_PROT_NONE 	(cap permis)
+		VM_PROT_READ 	(nomes lectura)
+		VM_PROT_WRITE	(nomes escritura)
+		VM_PROT_EXECUTE (permis execucio)
+		Podem usar bitwise ors per combinar
+		multiples permisos.
+	
+	6) /hurd/crash: ./memory-management(1035) crashed, signal {no:11, code:2, error:2}, exception {1, code:2, subcode 19628032}, PCs : {0x80486ec, 0x105a9bc}, writing core file.
+	7) Fet. Hem usat VM_PROT_WRITE | VM_PROT_READ.
+
+8)
+	Si, dona bus error. Veiem que en Unix s'usa el registre gs per dades locals al thread. Aixo porta problemes perque els valor de gs del thread creat es diferent.
+
+9)
+	...
+
+10)
+	Efectivament, la nostra task apareix com la següent linia:
+	PID	Stat	SZ	RSS	Args
+	2637	p	16K	0	
+
+
+11)
+	Si que es pot. A windows hi ha les syscalls ReadProcessMemory() i WriteProcessMemory()
+	A Linux, process_vm_readv() i process_vm_writev() des de Linux 3.2.
+	
+	Font: Wellons, Chris. How to Read and Write Other Process Memory (2016). Disponible a https://nullprogram.com/blog/2016/09/03/
+	
+		
+	
+	
+
+
